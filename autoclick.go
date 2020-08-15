@@ -3,26 +3,32 @@ package main
 import (
 	"fmt"
 	"time"
-	"io/ioutil"
 	"sync/atomic"
+	"os"
+	"log"
+    "path/filepath"
 	"github.com/robotn/gohook"
 	"github.com/go-vgo/robotgo"
 	"github.com/martinlindhe/notify"
 	"github.com/getlantern/systray"
-	"github.com/getlantern/systray/example/icon"
 )
 
 func main() {
 	onExit := func() {
-		now := time.Now()
-		ioutil.WriteFile(fmt.Sprintf(`on_exit_%d.txt`, now.UnixNano()), []byte(now.String()), 0644)
+		fmt.Println("BYE")
 	}
 
 	systray.Run(onReady, onExit)
 }
 
 func onReady() {
-	systray.SetTemplateIcon(icon.Data, icon.Data)
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("DIR:", dir)
+	iconFile := filepath.Join(dir, "..", "..", "Resources", "click-icon.png")
+
 	systray.SetTitle("Auto Click")
 	systray.SetTooltip("Click 'c' 4 times")
 	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
@@ -33,16 +39,10 @@ func onReady() {
 		fmt.Println("Finished quitting")
 	}()
 
-	go listenForC()
+	listenForC(iconFile)
 }
 
-func listenForC() {
-	// fmt.Println("--- Please press ctrl + shift + q to stop hook ---")
-	// hook.Register(hook.KeyDown, []string{"q", "ctrl", "shift"}, func(e hook.Event) {
-	// 	fmt.Println("ctrl-shift-q")
-	// 	hook.End()
-	// })
-
+func listenForC(iconFile string) {
 	var count int64
 	var click bool
 	go func() {
@@ -55,7 +55,7 @@ func listenForC() {
 	}()
 
 	fmt.Println("--- Please press c 4 times to toggle---")
-	notify.Notify("autoclick", "notice", "press c 4 times to toggle", "")
+	notify.Notify("autoclick", "notice", "press c 4 times to toggle", iconFile)
 	hook.Register(hook.KeyDown, []string{"c"}, func(e hook.Event) {
 		newCount := atomic.AddInt64(&count, 1)
 		go func() {
@@ -70,9 +70,9 @@ func listenForC() {
 			click = !click
 			fmt.Println("CLICK:", click)
 			if click {
-				notify.Notify("autoclick", "notice", "Turn autoclick ON", "")
+				notify.Notify("autoclick", "notice", "Turn autoclick ON", iconFile)
 			}	else{
-				notify.Notify("autoclick", "notice", "Turn autoclick OFF", "")
+				notify.Notify("autoclick", "notice", "Turn autoclick OFF", iconFile)
 			}
 		}
 		fmt.Println("pressed: c", newCount)
