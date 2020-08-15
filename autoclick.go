@@ -27,7 +27,7 @@ func onReady() {
 		log.Fatal(err)
 	}
 	fmt.Println("DIR:", dir)
-	iconFile := filepath.Join(dir, "..", "..", "Resources", "click-icon.png")
+	iconFile := filepath.Join(dir, "..", "..", "Contents", "Resources", "click-icon.png")
 
 	systray.SetTitle("Auto Click")
 	systray.SetTooltip("Click 'c' 4 times")
