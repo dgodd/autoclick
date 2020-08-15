@@ -10,6 +10,12 @@ the /Applications/ directory on your mac.
 
 ## Build
 ```
-go build -o AutoClick.app/Contents/MacOS/autoclick && open AutoClick.app
+go build -o AutoClick.app/Contents/MacOS/autoclick
+upx --brute AutoClick.app/Contents/MacOS/autoclick
 zip -r AutoClick.zip AutoClick.app
+```
+
+To build and run
+```
+go build -o AutoClick.app/Contents/MacOS/autoclick && open AutoClick.app
 ```
