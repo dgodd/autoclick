@@ -3,13 +3,40 @@ package main
 import (
 	"fmt"
 	"time"
+	"io/ioutil"
 	"sync/atomic"
 	"github.com/robotn/gohook"
 	"github.com/go-vgo/robotgo"
 	"github.com/martinlindhe/notify"
+	"github.com/getlantern/systray"
+	"github.com/getlantern/systray/example/icon"
 )
 
 func main() {
+	onExit := func() {
+		now := time.Now()
+		ioutil.WriteFile(fmt.Sprintf(`on_exit_%d.txt`, now.UnixNano()), []byte(now.String()), 0644)
+	}
+
+	systray.Run(onReady, onExit)
+}
+
+func onReady() {
+	systray.SetTemplateIcon(icon.Data, icon.Data)
+	systray.SetTitle("Auto Click")
+	systray.SetTooltip("Click 'c' 4 times")
+	mQuitOrig := systray.AddMenuItem("Quit", "Quit the whole app")
+	go func() {
+		<-mQuitOrig.ClickedCh
+		fmt.Println("Requesting quit")
+		systray.Quit()
+		fmt.Println("Finished quitting")
+	}()
+
+	go listenForC()
+}
+
+func listenForC() {
 	// fmt.Println("--- Please press ctrl + shift + q to stop hook ---")
 	// hook.Register(hook.KeyDown, []string{"q", "ctrl", "shift"}, func(e hook.Event) {
 	// 	fmt.Println("ctrl-shift-q")
